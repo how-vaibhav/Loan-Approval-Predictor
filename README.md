@@ -1,460 +1,291 @@
-<div align="center">
+# LoanIQ — AI Loan Approval Predictor
 
-<!-- Header Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=6366f1&height=200&section=header&text=LoanIQ&fontSize=80&fontColor=ffffff&fontAlignY=38&desc=AI-Powered+Loan+Approval+Predictor&descAlignY=60&descAlign=50" alt="LoanIQ Banner" width="100%"/>
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-2.3+-000000?style=flat-square&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-F7931E?style=flat-square&logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
+[![Kaggle Dataset](https://img.shields.io/badge/Dataset-Kaggle-20BEFF?style=flat-square&logo=kaggle&logoColor=white)](https://www.kaggle.com/datasets/ninzaami/loan-predication?resource=download)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-46E3B7?style=flat-square&logo=render&logoColor=white)](https://loan-approval-predictor-8p0v.onrender.com)
+[![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE)
 
-<!-- Badges -->
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-2.3+-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
-[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
-[![Kaggle](https://img.shields.io/badge/Kaggle-Dataset-20BEFF?style=for-the-badge&logo=kaggle&logoColor=white)](https://www.kaggle.com/datasets/altruistdelhite04/loan-prediction-problem-dataset)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge)]()
+An end-to-end machine learning project that predicts loan approval status from applicant financial data. The system includes a preprocessing pipeline, feature engineering, hyperparameter-tuned Random Forest classifier, and a Flask web application for real-time inference.
 
-<br/>
-
-> 🤖 **An end-to-end machine learning project** that predicts loan approval status using Random Forest with feature engineering, deployed as a beautiful web application.
-
-[🚀 Live Demo](#-deployment) · [📊 Model Report](#-model-performance) · [🛠 Installation](#-getting-started) · [📖 Documentation](#-project-structure)
-
-</div>
+**Live deployment:** [loan-approval-predictor-8p0v.onrender.com](https://loan-approval-predictor-8p0v.onrender.com)
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [Overview](#-overview)
-- [Architecture](#-architecture)
-- [Dataset](#-dataset)
-- [Feature Engineering](#-feature-engineering)
-- [ML Pipeline](#-ml-pipeline)
-- [Model Performance](#-model-performance)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [Web Application](#-web-application)
-- [API Reference](#-api-reference)
-- [Deployment](#-deployment)
-- [Tech Stack](#-tech-stack)
+- [Live Demo](#live-demo)
+- [Architecture](#architecture)
+- [Dataset](#dataset)
+- [Feature Engineering](#feature-engineering)
+- [ML Pipeline](#ml-pipeline)
+- [Model Performance](#model-performance)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [API Reference](#api-reference)
 
 ---
 
-## 🔭 Overview
+## Live Demo
 
-**LoanIQ** is a complete, production-ready machine learning project that determines whether a loan application should be approved or rejected based on applicant financial and personal data.
+The application is deployed on Render and accessible at:
 
-### Key Highlights
+> **[https://loan-approval-predictor-8p0v.onrender.com](https://loan-approval-predictor-8p0v.onrender.com)**
 
-| Feature | Detail |
-|---------|--------|
-| 🎯 Algorithm | Random Forest Classifier with GridSearchCV |
-| 📊 Dataset | 614 samples, 12 raw features |
-| ⚙️ Feature Engineering | 5 engineered features derived from raw data |
-| 🧪 Validation | 5-fold stratified cross-validation |
-| 🌐 Deployment | Flask web app + REST API |
-| 🎨 UI | Premium dark glassmorphism interface |
+Note: Render free-tier instances spin down after inactivity. The first request may take 30–60 seconds to cold-start.
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                     LOANIQ SYSTEM ARCHITECTURE                       │
-└─────────────────────────────────────────────────────────────────────┘
-
-  ┌──────────────┐    HTTP POST     ┌─────────────────────────────────┐
-  │              │  ─────────────▶  │          Flask API               │
-  │  Web Browser │                  │       (app.py / port 5000)       │
-  │  (index.html)│  ◀─────────────  │  GET /      POST /predict       │
-  └──────────────┘   JSON Response  └───────────────┬─────────────────┘
-                                                     │
-                                          ┌──────────▼──────────┐
-                                          │  Feature Engineering │
-                                          │  TotalIncome, EMI,   │
-                                          │  Balance_Income, Log │
-                                          └──────────┬──────────┘
-                                                     │
-                                          ┌──────────▼──────────┐
-                                          │  sklearn Pipeline    │
-                                          │  Imputer → Encoder   │
-                                          │  → StandardScaler    │
-                                          └──────────┬──────────┘
-                                                     │
-                                          ┌──────────▼──────────┐
-                                          │  Random Forest       │
-                                          │  (300 Trees)         │
-                                          │  GridSearchCV Tuned  │
-                                          └──────────┬──────────┘
-                                                     │
-                                          ┌──────────▼──────────┐
-                                          │  Prediction Output   │
-                                          │  Status + Confidence │
-                                          └─────────────────────┘
-```
-
-### ML Pipeline Flow
-
-```
-  RAW DATA (train.xls)
-        │
-        ▼
-  ┌──────────────────────────────────────────────────────┐
-  │                  DATA PREPROCESSING                    │
-  │  • Drop Loan_ID (identifier, not predictive)          │
-  │  • Fill nulls: LoanAmount → median                    │
-  │  •             Loan_Amount_Term → mode                │
-  │  •             Credit_History → mode                  │
-  │  •             Gender/Married/Self_Employed → mode    │
-  │  • Dependents: '3+' → 3 (string clean)               │
-  └──────────────────────────┬───────────────────────────┘
-                             │
-                             ▼
-  ┌──────────────────────────────────────────────────────┐
-  │                 FEATURE ENGINEERING                    │
-  │                                                        │
-  │  TotalIncome    = ApplicantIncome + CoapplicantIncome │
-  │  Log_TotalInc   = log1p(TotalIncome)    [skew fix]   │
-  │  Log_LoanAmount = log1p(LoanAmount)     [skew fix]   │
-  │  EMI            = LoanAmount / Term                   │
-  │  Balance_Income = TotalIncome - (EMI × 1000)         │
-  │                                                        │
-  └──────────────────────────┬───────────────────────────┘
-                             │
-                             ▼
-  ┌──────────────────────────────────────────────────────┐
-  │               SKLEARN PIPELINE                         │
-  │                                                        │
-  │  Categorical (5):  SimpleImputer → OrdinalEncoder    │
-  │  Numerical (11):   SimpleImputer → StandardScaler    │
-  │                                                        │
-  └──────────────────────────┬───────────────────────────┘
-                             │
-                             ▼
-  ┌──────────────────────────────────────────────────────┐
-  │        RANDOM FOREST + GRIDSEARCHCV                   │
-  │                                                        │
-  │  • n_estimators: [100, 200, 300]                     │
-  │  • max_depth:    [4, 6, 8, None]                     │
-  │  • min_samples_split: [2, 5, 10]                     │
-  │  • max_features: [sqrt, log2]                        │
-  │  • Scoring: F1 (handles class imbalance)             │
-  │  • class_weight: balanced                            │
-  │                                                        │
-  └──────────────────────────┬───────────────────────────┘
-                             │
-                             ▼
-                    ┌──────────────┐
-                    │   APPROVED   │  ← Loan_Status = Y
-                    │   REJECTED   │  ← Loan_Status = N
-                    └──────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                         Browser Client                          │
+│         Vanilla JS · Glassmorphism UI · Real-time Calc         │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │  HTTP / JSON
+┌─────────────────────────▼───────────────────────────────────────┐
+│                      Flask Application                          │
+│                app.py · /predict · /health                      │
+└──────────┬──────────────────────────────────────────────────────┘
+           │
+┌──────────▼──────────────────────────────────────────────────────┐
+│                      ML Inference Layer                         │
+│                                                                  │
+│  Raw Input ──► Feature Engineering ──► Preprocessing Pipeline  │
+│                                                                  │
+│    TotalIncome       ColumnTransformer     Random Forest        │
+│    EMI               SimpleImputer    ──►  (300 trees)     ──►  │
+│    Balance_Income    OrdinalEncoder        GridSearchCV         │
+│    Log Transforms    StandardScaler        5-fold CV            │
+└─────────────────────────────────────────────────────────────────┘
+           │
+┌──────────▼──────────────────────────────────────────────────────┐
+│                      Model Artifacts                            │
+│          model/artifacts/model.pkl  ·  pipeline.pkl            │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📊 Dataset
+## Dataset
 
-**Source**: [Kaggle — Loan Prediction Problem Dataset](https://www.kaggle.com/datasets/altruistdelhite04/loan-prediction-problem-dataset)
+**Source:** [Loan Prediction Dataset — Kaggle](https://www.kaggle.com/datasets/ninzaami/loan-predication?resource=download)
 
-| Feature | Type | Description | Missing |
-|---------|------|-------------|---------|
-| `Loan_ID` | object | Unique identifier (dropped) | 0 |
-| `Gender` | categorical | Male / Female | 13 |
-| `Married` | categorical | Yes / No | 3 |
-| `Dependents` | categorical | 0 / 1 / 2 / 3+ | 15 |
-| `Education` | categorical | Graduate / Not Graduate | 0 |
-| `Self_Employed` | categorical | Yes / No | 32 |
-| `ApplicantIncome` | numeric | Monthly income of applicant | 0 |
-| `CoapplicantIncome` | numeric | Monthly income of co-applicant | 0 |
-| `LoanAmount` | numeric | Loan amount in thousands | 22 |
-| `Loan_Amount_Term` | numeric | Term in months | 14 |
-| `Credit_History` | numeric | 1 = good, 0 = bad | 50 |
-| `Property_Area` | categorical | Urban / Semiurban / Rural | 0 |
-| `Loan_Status` | target | Y (approved) / N (rejected) | 0 |
+| Property | Value |
+|---|---|
+| Training samples | 614 |
+| Test samples | 367 |
+| Raw features | 12 |
+| Target variable | `Loan_Status` (Y / N) |
+| Class distribution | ~69% approved, ~31% rejected |
 
-### Class Distribution
+**Raw features:**
 
-```
-Approved (Y):  422  ████████████████████████████████  68.7%
-Rejected (N):  192  ██████████████                    31.3%
-```
-
-> ⚠️ **Class imbalance handled** using `class_weight='balanced'` in the Random Forest.
-
----
-
-## ⚙️ Feature Engineering
-
-5 new features are engineered to capture financial capacity signals:
-
-### 1. Total Household Income
-```
-TotalIncome = ApplicantIncome + CoapplicantIncome
-```
-> Captures the combined household repayment power.
-
-### 2. Log-Transformed Income (Skewness Fix)
-```
-Log_TotalIncome = log(1 + TotalIncome)
-Log_LoanAmount  = log(1 + LoanAmount)
-```
-> Income data is heavily right-skewed. Log transform brings it closer to a normal distribution, improving model performance.
-
-### 3. Estimated Monthly EMI
-```
-EMI = LoanAmount / Loan_Amount_Term
-```
-> Approximates the monthly repayment burden.
-
-### 4. Balance Income (Repayment Capacity)
-```
-Balance_Income = TotalIncome - (EMI × 1000)
-```
-> Key derived feature: residual income after servicing the loan. Positive = can repay.
+| Feature | Type | Description |
+|---|---|---|
+| `Gender` | Categorical | Male / Female |
+| `Married` | Categorical | Yes / No |
+| `Dependents` | Categorical | 0, 1, 2, 3+ |
+| `Education` | Categorical | Graduate / Not Graduate |
+| `Self_Employed` | Categorical | Yes / No |
+| `ApplicantIncome` | Numeric | Monthly income of the applicant |
+| `CoapplicantIncome` | Numeric | Monthly income of the co-applicant |
+| `LoanAmount` | Numeric | Loan amount in thousands |
+| `Loan_Amount_Term` | Numeric | Term in months |
+| `Credit_History` | Binary | 1 = good, 0 = poor |
+| `Property_Area` | Categorical | Urban / Semiurban / Rural |
 
 ---
 
-## 🤖 ML Pipeline
+## Feature Engineering
 
-### Preprocessing Strategy
+Four engineered features are derived before preprocessing:
 
-```
-Categorical Features → SimpleImputer(most_frequent) → OrdinalEncoder
-                                                            ↓
-Numerical Features  → SimpleImputer(median)        → StandardScaler
-                                                            ↓
-                              ColumnTransformer
-```
-
-### Hyperparameter Tuning
-
-| Parameter | Values Searched | Best |
-|-----------|----------------|------|
-| `n_estimators` | 100, 200, 300 | Tuned |
-| `max_depth` | 4, 6, 8, None | Tuned |
-| `min_samples_split` | 2, 5, 10 | Tuned |
-| `max_features` | sqrt, log2 | Tuned |
-| `cv folds` | 5 | Fixed |
-| `scoring` | F1 | Fixed |
+| Feature | Formula | Rationale |
+|---|---|---|
+| `TotalIncome` | `ApplicantIncome + CoapplicantIncome` | Combined household repayment capacity |
+| `EMI` | `LoanAmount / Loan_Amount_Term` | Monthly obligation |
+| `Balance_Income` | `TotalIncome - (EMI × 1000)` | Disposable income after EMI |
+| `Log_TotalIncome` | `log(TotalIncome + 1)` | Normalises right-skewed income distribution |
+| `Log_LoanAmount` | `log(LoanAmount + 1)` | Normalises right-skewed loan amounts |
 
 ---
 
-## 📈 Model Performance
+## ML Pipeline
+
+```
+Raw Input
+    │
+    ▼
+Feature Engineering (pandas)
+    │
+    ▼
+ColumnTransformer
+    ├── Numeric columns  → SimpleImputer(median) → StandardScaler
+    └── Categorical cols → SimpleImputer(most_frequent) → OrdinalEncoder
+    │
+    ▼
+RandomForestClassifier
+    └── Tuned via GridSearchCV (5-fold stratified CV)
+        ├── n_estimators: [100, 200, 300]
+        ├── max_depth: [None, 10, 20]
+        ├── min_samples_split: [2, 5, 10]
+        └── Scoring: AUC-ROC
+```
+
+---
+
+## Model Performance
 
 | Metric | Score |
-|--------|-------|
-| ✅ Accuracy | ~82–84% |
-| ✅ Precision | ~85–88% |
-| ✅ Recall | ~90–93% |
-| ✅ F1 Score | ~87–90% |
-| ✅ ROC-AUC | ~87–91% |
-| ✅ CV Accuracy (5-fold) | ~80–83% |
+|---|---|
+| Accuracy | 87.0% |
+| AUC-ROC | 0.8307 |
+| F1-Score | 0.911 |
+| Precision | 0.88 |
+| Recall | 0.94 |
 
-> 📌 Exact values printed at training time and stored in `model/model_metadata.pkl`
+**Top feature importances** (from Random Forest):
 
-### Baseline Comparison
-
-| Model | Accuracy |
-|-------|----------|
-| Logistic Regression (baseline) | ~78–80% |
-| **Random Forest (tuned)** | **~82–84%** |
+1. Credit History — 95
+2. Balance Income — 72
+3. Total Income — 65
+4. EMI Amount — 58
+5. Loan Amount — 45
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Loan Approval Predictor/
-│
-├── train.xls                   # Kaggle dataset (CSV format)
+├── app.py                  # Flask application — /predict and /health endpoints
+├── requirements.txt        # Python dependencies
+├── Procfile                # Deployment entry point
 │
 ├── model/
-│   ├── train.py                # Full ML pipeline script
-│   ├── loan_model.pkl          # Trained Random Forest (auto-generated)
-│   ├── preprocessor.pkl        # Fitted sklearn Pipeline (auto-generated)
-│   ├── model_metadata.pkl      # Metrics + feature names (auto-generated)
-│   └── feature_importance.png  # Feature importance plot (auto-generated)
+│   ├── train.py            # Training script — feature engineering + GridSearchCV
+│   └── artifacts/
+│       ├── model.pkl       # Trained Random Forest classifier
+│       └── pipeline.pkl    # Fitted ColumnTransformer preprocessing pipeline
+│
+├── data/
+│   └── train.xls           # Kaggle training dataset (CSV format)
 │
 ├── templates/
-│   └── index.html              # Jinja2 HTML — premium UI
+│   └── index.html          # Jinja2 template — prediction UI
 │
-├── static/
-│   ├── style.css               # Dark glassmorphism CSS
-│   └── script.js               # Form logic + API calls + animations
-│
-├── app.py                      # Flask web server
-├── requirements.txt            # Python dependencies
-├── Procfile                    # Heroku/Render deployment config
-└── README.md                   # This file
+└── static/
+    ├── style.css           # Dark glassmorphism design system
+    └── script.js           # UI logic, animation components, API client
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.8 or higher
 - pip
 
-### 1. Clone the Repository
+### Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/loan-approval-predictor.git
-cd loan-approval-predictor
-```
+# Clone the repository
+git clone https://github.com/how-vaibhav/Loan-Approval-Predictor.git
+cd Loan-Approval-Predictor
 
-### 2. Install Dependencies
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 3. Train the Model
+### Train the Model
+
+Run this once before starting the server. Artifacts are saved to `model/artifacts/`.
 
 ```bash
 python model/train.py
 ```
 
-Output:
+Expected output:
+
 ```
-============================================================
-  LOAN APPROVAL PREDICTOR - TRAINING PIPELINE
-============================================================
-[1/7] Loading dataset...     Rows: 614  |  Columns: 13
-[2/7] Feature Engineering... Features created: TotalIncome, EMI, ...
-[3/7] Features: 5 categorical + 11 numerical
-[4/7] Building preprocessing pipeline...
-[5/7] Training Random Forest with GridSearchCV...
-[6/7] Accuracy: 0.8293 | F1: 0.8841 | AUC: 0.8956
-[7/7] Model, preprocessor, and metadata saved!
-============================================================
-  TRAINING COMPLETE!
-============================================================
+Training complete.
+Accuracy : 0.8699
+AUC-ROC  : 0.8307
+F1-Score : 0.9109
+Model saved → model/artifacts/model.pkl
+Pipeline saved → model/artifacts/pipeline.pkl
 ```
 
-### 4. Start the Web Application
+### Run Locally
 
 ```bash
 python app.py
 ```
 
-Open **http://localhost:5000** in your browser.
+The application starts on `http://localhost:5000`.
 
 ---
 
-## 🌐 Web Application
+## API Reference
 
-The web app provides a beautiful dark-themed UI with:
+### `GET /health`
 
-- 📋 **12-field applicant form** with real-time validation
-- ⚡ **Live financial calculator** — updates EMI, Balance Income, DTI as you type
-- 🎯 **AI prediction** with animated probability ring (confidence %)
-- 📊 **Analysis breakdown** — Total Income, EMI, Balance Income shown post-prediction
-- 📱 **Fully responsive** — works on mobile and desktop
+Returns model status and loaded performance metrics.
 
----
-
-## 🔌 API Reference
-
-### `POST /predict`
-
-**Request Body (JSON)**:
-
+**Response**
 ```json
 {
-  "Gender"            : "Male",
-  "Married"           : "Yes",
-  "Dependents"        : "0",
-  "Education"         : "Graduate",
-  "Self_Employed"     : "No",
-  "Property_Area"     : "Urban",
-  "ApplicantIncome"   : 5849,
-  "CoapplicantIncome" : 0,
-  "LoanAmount"        : 128,
-  "Loan_Amount_Term"  : 360,
-  "Credit_History"    : 1
+  "status": "ok",
+  "model": "Random Forest",
+  "accuracy": 0.8699,
+  "auc": 0.8307,
+  "f1": 0.9109
 }
 ```
 
-**Response (JSON)**:
+### `POST /predict`
 
+Accepts applicant data and returns a loan approval prediction.
+
+**Request body**
 ```json
 {
-  "status"      : "Approved",
-  "probability" : 87.34,
-  "approved"    : true,
-  "details"     : {
-    "total_income"   : 5849,
-    "emi"            : 0.356,
-    "balance_income" : 5492.78,
-    "log_income"     : 8.6744
+  "Gender": "Male",
+  "Married": "Yes",
+  "Dependents": "0",
+  "Education": "Graduate",
+  "Self_Employed": "No",
+  "Property_Area": "Urban",
+  "ApplicantIncome": 5000,
+  "CoapplicantIncome": 1500,
+  "LoanAmount": 150,
+  "Loan_Amount_Term": 360,
+  "Credit_History": 1
+}
+```
+
+**Response**
+```json
+{
+  "approved": true,
+  "status": "Approved",
+  "probability": 64.87,
+  "details": {
+    "total_income": 6500,
+    "emi": 0.4167,
+    "balance_income": 6083.3,
+    "log_income": 8.7796
   }
 }
 ```
 
-### `GET /health`
-
-Returns model status and accuracy.
-
 ---
 
-## ☁️ Deployment
+## License
 
-### Option A — Render (Free, Recommended)
-
-1. Push your code to GitHub
-2. Go to [render.com](https://render.com) → New Web Service
-3. Connect your repo
-4. Set **Start Command**: `gunicorn app:app`
-5. Deploy! 🎉
-
-### Option B — Railway
-
-```bash
-railway login
-railway init
-railway up
-```
-
-### Option C — Local Network
-
-```bash
-python app.py
-# Access from other devices on your network:
-# http://YOUR_LOCAL_IP:5000
-```
-
----
-
-## 🛠 Tech Stack
-
-| Category | Technology |
-|----------|-----------|
-| **Language** | Python 3.8+ |
-| **ML Framework** | scikit-learn 1.3+ |
-| **Data Processing** | pandas, numpy |
-| **Model Serialization** | joblib |
-| **Web Framework** | Flask 2.3+ |
-| **Visualization** | matplotlib, seaborn |
-| **Frontend** | HTML5, Vanilla CSS, JavaScript |
-| **Fonts** | Inter, Space Grotesk (Google Fonts) |
-| **Deployment** | gunicorn + Render/Railway |
-| **Dataset** | Kaggle Loan Prediction Dataset |
-
----
-
-## 🙏 Acknowledgements
-
-- [Kaggle](https://www.kaggle.com) for the Loan Prediction dataset
-- [scikit-learn](https://scikit-learn.org) for the excellent ML toolkit
-- [Flask](https://flask.palletsprojects.com) for the lightweight web framework
-
----
-
-<div align="center">
-
-Made with ❤️ for academic purposes
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=6366f1&height=100&section=footer" width="100%"/>
-
-</div>
+This project is licensed under the MIT License.
