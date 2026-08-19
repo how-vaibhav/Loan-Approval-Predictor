@@ -9,6 +9,7 @@ Routes:
 
 import os
 import json
+import traceback
 import joblib
 import numpy as np
 import pandas as pd
@@ -107,6 +108,7 @@ def predict():
         })
 
     except Exception as e:
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 400
 
 

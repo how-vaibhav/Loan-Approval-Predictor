@@ -392,12 +392,13 @@ document.getElementById('loan-form').addEventListener('submit', async function(e
   };
 
   try {
-    const res = await fetch('/predict', {
+    const res  = await fetch('/predict', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify(formData)
     });
-    if (!res.ok) throw new Error('Server error: ' + res.status);
+    // Always read body — the server may send an error JSON on 400
     const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error: ' + res.status);
     if (data.error) throw new Error(data.error);
     showResult(data);
   } catch(err) {
