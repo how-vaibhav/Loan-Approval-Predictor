@@ -1,6 +1,6 @@
 """
-Loan Approval Predictor - Flask Web Application
-================================================
+Loan Approval Predictor - Flask Web Application (v2)
+=====================================================
 Routes:
   GET  /          -> Serve the prediction UI
   POST /predict   -> Accept form data, return prediction JSON
@@ -8,7 +8,6 @@ Routes:
 """
 
 import os
-import json
 import traceback
 import joblib
 import numpy as np
@@ -27,19 +26,27 @@ preprocessor = joblib.load(os.path.join(MODEL_DIR, "preprocessor.pkl"))
 metadata     = joblib.load(os.path.join(MODEL_DIR, "model_metadata.pkl"))
 CAT_FEATURES = metadata["cat_features"]
 NUM_FEATURES = metadata["num_features"]
-print(f"Model loaded | Accuracy: {metadata['accuracy']} | AUC: {metadata['auc']}")
+print(f"Model loaded | Accuracy: {metadata['accuracy']} | AUC: {metadata['auc']} | Version: {metadata.get('model_version', 'v1')}")
 
 
 # ─── Routes ────────────────────────────────────────────────────
 @app.route("/")
 def index():
-    return render_template("index.html", model_accuracy=metadata["accuracy"],
-                           model_auc=metadata["auc"], model_f1=metadata["f1_score"])
+    return render_template(
+        "index.html",
+        model_accuracy=metadata["accuracy"],
+        model_auc=metadata["auc"],
+        model_f1=metadata["f1_score"],
+    )
 
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok", "model_accuracy": metadata["accuracy"]})
+    return jsonify({
+        "status": "ok",
+        "model_accuracy": metadata["accuracy"],
+        "model_version": metadata.get("model_version", "v1"),
+    })
 
 
 @app.route("/predict", methods=["POST"])
@@ -56,12 +63,19 @@ def predict():
         dependents_raw     = str(data.get("Dependents", "0")).replace("3+", "3")
         dependents         = int(dependents_raw)
 
-        # --- Feature Engineering (mirrors train.py) ---
-        total_income      = applicant_income + coapplicant_income
-        log_total_income  = float(np.log1p(total_income))
-        log_loan_amount   = float(np.log1p(loan_amount))
-        emi               = loan_amount / loan_term if loan_term > 0 else 0
-        balance_income    = total_income - (emi * 1000)
+        # --- Feature Engineering (must mirror train.py exactly) ---
+        total_income       = applicant_income + coapplicant_income
+        log_total_income   = float(np.log1p(total_income))
+        log_loan_amount    = float(np.log1p(loan_amount))
+        emi                = loan_amount / loan_term if loan_term > 0 else 0
+        balance_income     = total_income - (emi * 1000)
+
+        # New v2 features
+        dti_ratio          = (emi * 1000) / (total_income + 1)
+        loan_income_ratio  = loan_amount / (total_income + 1)
+        credit_x_income    = credit_history * log_total_income
+        income_per_dep     = total_income / (dependents + 1)
+        is_affordable      = int(balance_income > 0)
 
         # --- Build input DataFrame ---
         input_data = {
@@ -81,6 +95,12 @@ def predict():
             "Log_LoanAmount"   : [log_loan_amount],
             "EMI"              : [emi],
             "Balance_Income"   : [balance_income],
+            # v2 features
+            "DTI_Ratio"        : [dti_ratio],
+            "Loan_Income_Ratio": [loan_income_ratio],
+            "Credit_x_Income"  : [credit_x_income],
+            "Income_Per_Dep"   : [income_per_dep],
+            "Is_Affordable"    : [is_affordable],
         }
         df_input = pd.DataFrame(input_data)[CAT_FEATURES + NUM_FEATURES]
 
@@ -90,9 +110,9 @@ def predict():
         probability = model.predict_proba(X_proc)[0][1]
 
         status = "Approved" if prediction == 1 else "Rejected"
-        # Map internal class order: target_classes = ['N', 'Y'] -> 1=Approved
+        # Correct for class encoding order: target_classes = ['N', 'Y'] -> 1=Approved
         if metadata["target_classes"][1] == "N":
-            status = "Rejected" if prediction == 1 else "Approved"
+            status      = "Rejected" if prediction == 1 else "Approved"
             probability = 1 - probability
 
         return jsonify({
@@ -100,10 +120,13 @@ def predict():
             "probability": round(float(probability) * 100, 2),
             "approved"   : status == "Approved",
             "details"    : {
-                "total_income"   : round(total_income, 2),
-                "emi"            : round(emi, 2),
-                "balance_income" : round(balance_income, 2),
-                "log_income"     : round(log_total_income, 4),
+                "total_income"      : round(total_income, 2),
+                "emi"               : round(emi, 2),
+                "balance_income"    : round(balance_income, 2),
+                "log_income"        : round(log_total_income, 4),
+                "dti_ratio"         : round(dti_ratio, 4),
+                "loan_income_ratio" : round(loan_income_ratio, 4),
+                "is_affordable"     : bool(is_affordable),
             }
         })
 
@@ -113,6 +136,6 @@ def predict():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port  = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_ENV") != "production"
     app.run(host="0.0.0.0", port=port, debug=debug)

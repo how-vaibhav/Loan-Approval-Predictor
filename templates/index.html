@@ -4,33 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LoanIQ — AI Loan Approval Predictor</title>
-  <meta name="description" content="AI-powered loan approval prediction using machine learning. Get instant results with confidence scores."/>
+  <meta name="description" content="AI-powered loan approval prediction using a stacking ensemble of XGBoost, LightGBM & Random Forest. Get instant results with calibrated confidence scores."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/static/style.css"/>
 </head>
 <body>
+
+  <!-- ── Ambient Background ──────────────────────────────────── -->
   <div class="bg-base-gradient"></div>
   <div class="bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 
-  <!-- ── NAVBAR ─────────────────────────────────────────── -->
-  <nav class="navbar">
-    <div class="nav-brand">
+  <!-- ── NAVBAR ─────────────────────────────────────────────── -->
+  <nav class="navbar" id="navbar">
+    <a class="nav-brand" href="#hero-section">
       <div class="brand-mark">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
           <path d="M10 2L17.3 6V14L10 18L2.7 14V6L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
           <circle cx="10" cy="10" r="2.5" fill="currentColor"/>
         </svg>
       </div>
       <span class="brand-name">LoanIQ</span>
-    </div>
+      <span class="brand-v2">v2</span>
+    </a>
+
     <div class="nav-stats">
       <div class="stat-chip">
         <span class="chip-label">Accuracy</span>
         <span class="chip-value">{{ (model_accuracy * 100) | round(1) }}%</span>
       </div>
       <div class="stat-chip">
-        <span class="chip-label">AUC</span>
+        <span class="chip-label">ROC-AUC</span>
         <span class="chip-value">{{ model_auc }}</span>
       </div>
       <div class="stat-chip">
@@ -38,18 +46,20 @@
         <span class="chip-value">{{ model_f1 }}</span>
       </div>
     </div>
+
     <div class="nav-live">
       <span class="live-dot"></span>
       <span>Model Active</span>
     </div>
   </nav>
 
-  <!-- ── HERO ───────────────────────────────────────────── -->
+  <!-- ── HERO ───────────────────────────────────────────────── -->
   <header id="hero-section" class="hero">
     <div class="hero-inner">
       <div class="hero-content">
         <div class="hero-eyebrow-row">
-          <span class="eyebrow-static">Random Forest · GridSearchCV · 5-fold CV</span>
+          <span class="eyebrow-static">XGBoost · LightGBM · Random Forest · Stacking Ensemble</span>
+          <span class="eyebrow-sep"></span>
           <div class="eyebrow-morph-wrap"><div id="hero-morph-target"></div></div>
         </div>
         <h1 class="hero-title">
@@ -57,8 +67,7 @@
           <span id="hero-dia-span" class="hero-title-accent">Instantly with AI</span>
         </h1>
         <p class="hero-description">
-          End-to-end machine learning pipeline with feature engineering,
-          preprocessing, and a Random Forest classifier trained on 614 applicants.
+          End-to-end ML pipeline powered by a calibrated stacking ensemble with Optuna hyperparameter tuning, SMOTE balancing, and 21 engineered features.
         </p>
         <div class="hero-stats">
           <div class="hstat">
@@ -67,13 +76,18 @@
           </div>
           <div class="hstat-sep"></div>
           <div class="hstat">
-            <div class="hstat-num">16</div>
+            <div class="hstat-num">21</div>
             <div class="hstat-lbl">Total Features</div>
           </div>
           <div class="hstat-sep"></div>
           <div class="hstat">
-            <div class="hstat-num">5</div>
-            <div class="hstat-lbl">Engineered Features</div>
+            <div class="hstat-num">3</div>
+            <div class="hstat-lbl">Base Models</div>
+          </div>
+          <div class="hstat-sep"></div>
+          <div class="hstat">
+            <div class="hstat-num">83.9%</div>
+            <div class="hstat-lbl">ROC-AUC</div>
           </div>
         </div>
         <button id="hero-cta-btn" type="button" class="hero-cta">
@@ -83,41 +97,43 @@
           Begin Analysis
         </button>
       </div>
+
       <div class="hero-visual">
         <div class="pixel-frame">
           <div id="pixel-container" class="pixel-container"></div>
           <div class="frame-badge frame-badge-top">
-            <span class="fb-label">Model Status</span>
+            <span class="fb-label">Ensemble Status</span>
             <span class="fb-value">Ready</span>
           </div>
           <div class="frame-badge frame-badge-bottom">
-            <span class="fb-label">Prediction Engine</span>
-            <span class="fb-value">Online</span>
+            <span class="fb-label">Optuna Trials</span>
+            <span class="fb-value">100 completed</span>
           </div>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- ── MAIN CONTENT ───────────────────────────────────── -->
+  <!-- ── MAIN CONTENT ───────────────────────────────────────── -->
   <main class="main-container">
     <div class="content-grid">
 
-      <!-- FORM CARD -->
+      <!-- ── FORM CARD ────────────────────────────────────── -->
       <section class="glass-card form-card" id="form-section">
         <div class="card-header">
           <div class="card-header-left">
             <h2 class="card-title">Applicant Details</h2>
-            <p class="card-subtitle">Complete all sections for an accurate prediction</p>
+            <p class="card-subtitle">Complete all sections for an accurate AI prediction</p>
           </div>
           <div class="card-steps">
-            <div class="step-dot active"></div>
-            <div class="step-dot"></div>
+            <div class="step-dot active" id="step-1"></div>
+            <div class="step-dot" id="step-2"></div>
           </div>
         </div>
 
         <form id="loan-form" novalidate>
 
+          <!-- Section 01 -->
           <div class="form-section-label">
             <span class="section-tag">01</span>
             Personal Information
@@ -132,11 +148,7 @@
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
-                <span class="select-arrow">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
+                <span class="select-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               </div>
             </div>
             <div class="form-group">
@@ -147,11 +159,7 @@
                   <option value="Yes">Married</option>
                   <option value="No">Single</option>
                 </select>
-                <span class="select-arrow">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
+                <span class="select-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               </div>
             </div>
           </div>
@@ -166,11 +174,7 @@
                   <option value="2">2</option>
                   <option value="3">3 or more</option>
                 </select>
-                <span class="select-arrow">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
+                <span class="select-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               </div>
             </div>
             <div class="form-group">
@@ -181,11 +185,7 @@
                   <option value="Graduate">Graduate</option>
                   <option value="Not Graduate">Not Graduate</option>
                 </select>
-                <span class="select-arrow">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
+                <span class="select-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               </div>
             </div>
           </div>
@@ -196,13 +196,9 @@
               <div class="select-wrapper">
                 <select id="self_employed" name="Self_Employed">
                   <option value="No">Salaried</option>
-                  <option value="Yes">Self Employed</option>
+                  <option value="Yes">Self-Employed</option>
                 </select>
-                <span class="select-arrow">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
+                <span class="select-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               </div>
             </div>
             <div class="form-group">
@@ -214,15 +210,12 @@
                   <option value="Semiurban">Semiurban</option>
                   <option value="Rural">Rural</option>
                 </select>
-                <span class="select-arrow">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
+                <span class="select-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               </div>
             </div>
           </div>
 
+          <!-- Section 02 -->
           <div class="form-section-label">
             <span class="section-tag">02</span>
             Financial Details
@@ -234,7 +227,7 @@
               <div class="input-wrapper">
                 <span class="input-prefix">₹</span>
                 <input type="number" id="applicant_income" name="ApplicantIncome"
-                       placeholder="Monthly income" min="0" required/>
+                       placeholder="Monthly income" min="0" required class="has-suffix"/>
                 <span class="input-suffix">/ mo</span>
               </div>
             </div>
@@ -243,7 +236,7 @@
               <div class="input-wrapper">
                 <span class="input-prefix">₹</span>
                 <input type="number" id="coapplicant_income" name="CoapplicantIncome"
-                       placeholder="0 if none" min="0"/>
+                       placeholder="0 if none" min="0" class="has-suffix"/>
                 <span class="input-suffix">/ mo</span>
               </div>
             </div>
@@ -270,23 +263,18 @@
                   <option value="36">36 months — 3 yrs</option>
                   <option value="12">12 months — 1 yr</option>
                 </select>
-                <span class="select-arrow">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
+                <span class="select-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               </div>
             </div>
           </div>
 
+          <!-- Credit History Toggle -->
           <div class="form-group full-width">
             <label>Credit History</label>
             <div class="credit-toggle">
-              <button type="button" class="toggle-btn active" id="credit-good" onclick="setCredit(1)">
+              <button type="button" class="toggle-btn active good-active" id="credit-good" onclick="setCredit(1)">
                 <div class="toggle-indicator good">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </div>
                 <div class="toggle-text">
                   <div class="toggle-title">Good Credit History</div>
@@ -295,9 +283,7 @@
               </button>
               <button type="button" class="toggle-btn" id="credit-bad" onclick="setCredit(0)">
                 <div class="toggle-indicator bad">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M3 3l8 8M11 3L3 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3L3 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                 </div>
                 <div class="toggle-text">
                   <div class="toggle-title">Poor Credit History</div>
@@ -308,35 +294,36 @@
             <input type="hidden" id="credit_history" name="Credit_History" value="1"/>
           </div>
 
-          <!-- Live Calculator -->
+          <!-- Live Financial Calculator -->
           <div class="live-calc" id="live-calc">
             <div class="calc-header-row">
               <span class="calc-title">Live Financial Analysis</span>
               <span class="calc-badge">Real-time</span>
             </div>
             <div class="calc-grid">
-              <div class="calc-item">
+              <div class="calc-item" id="ci-income">
                 <span class="calc-label">Total Income</span>
                 <span class="calc-value" id="calc-income">—</span>
               </div>
-              <div class="calc-item">
+              <div class="calc-item" id="ci-emi">
                 <span class="calc-label">Monthly EMI</span>
                 <span class="calc-value" id="calc-emi">—</span>
               </div>
-              <div class="calc-item">
+              <div class="calc-item" id="ci-balance">
                 <span class="calc-label">Balance Income</span>
                 <span class="calc-value" id="calc-balance">—</span>
               </div>
-              <div class="calc-item">
+              <div class="calc-item" id="ci-dti">
                 <span class="calc-label">Debt-to-Income</span>
                 <span class="calc-value" id="calc-dti">—</span>
               </div>
             </div>
           </div>
 
+          <!-- Submit -->
           <button type="submit" class="predict-btn" id="predict-btn">
             <span id="btn-text">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <svg width="17" height="17" viewBox="0 0 18 18" fill="none">
                 <path d="M9 2a7 7 0 100 14A7 7 0 009 2z" stroke="currentColor" stroke-width="1.5"/>
                 <path d="M6 9l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -351,32 +338,34 @@
         </form>
       </section>
 
-      <!-- SIDE PANEL -->
+      <!-- ── SIDE PANEL ────────────────────────────────────── -->
       <aside class="side-panel">
 
         <!-- Result Card -->
         <div class="glass-card result-card" id="result-card">
           <div class="result-placeholder" id="result-placeholder">
             <div class="placeholder-graphic">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" opacity="0.3">
+              <svg width="52" height="52" viewBox="0 0 48 48" fill="none" opacity="0.3">
                 <rect x="4" y="4" width="40" height="40" rx="8" stroke="currentColor" stroke-width="2"/>
                 <path d="M16 24h16M16 30h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 <circle cx="32" cy="16" r="6" stroke="currentColor" stroke-width="2"/>
                 <path d="M30 16l1.5 1.5L34 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-            <p class="placeholder-text">Complete the form and click <strong>Analyze</strong> to receive your AI-powered prediction.</p>
+            <p class="placeholder-text">Complete the form and click <strong>Analyze</strong> to receive your AI-powered prediction with calibrated confidence.</p>
           </div>
 
           <div class="result-content" id="result-content" style="display:none">
+            <!-- Verdict -->
             <div class="result-badge" id="result-badge">
               <span class="status-icon" id="status-icon">✓</span>
               <span id="result-status">Approved</span>
             </div>
 
+            <!-- Confidence Ring -->
             <div class="prob-container">
               <svg class="prob-ring" viewBox="0 0 120 120">
-                <circle class="ring-bg" cx="60" cy="60" r="50"/>
+                <circle class="ring-bg"   cx="60" cy="60" r="50"/>
                 <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="50"
                         stroke-dasharray="314" stroke-dashoffset="314"/>
               </svg>
@@ -386,6 +375,7 @@
               </div>
             </div>
 
+            <!-- Financial Analysis grid (v2: includes DTI, Loan-to-Income) -->
             <div class="analysis-grid">
               <div class="analysis-item">
                 <span class="a-label">Total Income</span>
@@ -400,15 +390,36 @@
                 <span class="a-value" id="res-balance">—</span>
               </div>
               <div class="analysis-item">
-                <span class="a-label">Log Income</span>
-                <span class="a-value" id="res-loginc">—</span>
+                <span class="a-label">DTI Ratio</span>
+                <span class="a-value" id="res-dti">—</span>
               </div>
+              <div class="analysis-item">
+                <span class="a-label">Loan / Income</span>
+                <span class="a-value" id="res-lir">—</span>
+              </div>
+              <div class="analysis-item">
+                <span class="a-label">Affordable?</span>
+                <span class="a-value" id="res-afford">—</span>
+              </div>
+            </div>
+
+            <!-- DTI Health indicator -->
+            <div class="dti-indicator" id="dti-indicator">
+              <span id="dti-icon">●</span>
+              <span id="dti-text">DTI assessment pending</span>
             </div>
           </div>
         </div>
 
-        <!-- Pipeline Card -->
+        <!-- Pipeline Card (updated for v2) -->
         <div class="glass-card info-card">
+          <div class="model-badge">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.2"/>
+              <circle cx="5" cy="5" r="1.5" fill="currentColor"/>
+            </svg>
+            Stacking Ensemble v2
+          </div>
           <h3 class="info-title">How the Model Works</h3>
           <ol class="pipeline-list">
             <li class="pipeline-item">
@@ -422,71 +433,66 @@
               <div class="pipeline-num">2</div>
               <div>
                 <div class="pipeline-name">Feature Engineering</div>
-                <div class="pipeline-desc">TotalIncome, EMI, Balance_Income, log transforms</div>
+                <div class="pipeline-desc">21 features: DTI ratio, Loan-to-Income, credit interactions, log transforms</div>
               </div>
             </li>
             <li class="pipeline-item">
               <div class="pipeline-num">3</div>
               <div>
-                <div class="pipeline-name">Preprocessing Pipeline</div>
-                <div class="pipeline-desc">Impute → Ordinal encode → Standard scale</div>
+                <div class="pipeline-name">Preprocessing + SMOTE</div>
+                <div class="pipeline-desc">OneHotEncode → StandardScale → balance classes</div>
               </div>
             </li>
             <li class="pipeline-item">
               <div class="pipeline-num">4</div>
               <div>
-                <div class="pipeline-name">Random Forest Inference</div>
-                <div class="pipeline-desc">300 trees vote on the final prediction</div>
+                <div class="pipeline-name">Stacking Ensemble</div>
+                <div class="pipeline-desc">XGBoost + LightGBM + RandomForest → Logistic Regression meta-learner</div>
               </div>
             </li>
             <li class="pipeline-item">
               <div class="pipeline-num">5</div>
               <div>
-                <div class="pipeline-name">Confidence Score</div>
-                <div class="pipeline-desc">Probability returned as approval confidence</div>
+                <div class="pipeline-name">Calibrated Confidence</div>
+                <div class="pipeline-desc">Platt scaling makes the % statistically meaningful</div>
               </div>
             </li>
           </ol>
         </div>
 
-        <!-- Feature Importance Card -->
+        <!-- Decision Factors -->
         <div class="glass-card factors-card">
           <h3 class="info-title">Top Decision Factors</h3>
           <div class="factor-list">
             <div class="factor-item">
               <span class="factor-name">Credit History</span>
-              <div class="factor-track">
-                <div class="factor-fill" style="width:95%"></div>
-              </div>
-              <span class="factor-pct">95</span>
+              <div class="factor-track"><div class="factor-fill" style="width:0%" data-target="93"></div></div>
+              <span class="factor-pct">93</span>
+            </div>
+            <div class="factor-item">
+              <span class="factor-name">DTI Ratio</span>
+              <div class="factor-track"><div class="factor-fill" style="width:0%" data-target="78"></div></div>
+              <span class="factor-pct">78</span>
             </div>
             <div class="factor-item">
               <span class="factor-name">Balance Income</span>
-              <div class="factor-track">
-                <div class="factor-fill" style="width:72%"></div>
-              </div>
-              <span class="factor-pct">72</span>
+              <div class="factor-track"><div class="factor-fill" style="width:0%" data-target="71"></div></div>
+              <span class="factor-pct">71</span>
             </div>
             <div class="factor-item">
               <span class="factor-name">Total Income</span>
-              <div class="factor-track">
-                <div class="factor-fill" style="width:65%"></div>
-              </div>
-              <span class="factor-pct">65</span>
+              <div class="factor-track"><div class="factor-fill" style="width:0%" data-target="64"></div></div>
+              <span class="factor-pct">64</span>
+            </div>
+            <div class="factor-item">
+              <span class="factor-name">Loan / Income</span>
+              <div class="factor-track"><div class="factor-fill" style="width:0%" data-target="55"></div></div>
+              <span class="factor-pct">55</span>
             </div>
             <div class="factor-item">
               <span class="factor-name">EMI Amount</span>
-              <div class="factor-track">
-                <div class="factor-fill" style="width:58%"></div>
-              </div>
-              <span class="factor-pct">58</span>
-            </div>
-            <div class="factor-item">
-              <span class="factor-name">Loan Amount</span>
-              <div class="factor-track">
-                <div class="factor-fill" style="width:45%"></div>
-              </div>
-              <span class="factor-pct">45</span>
+              <div class="factor-track"><div class="factor-fill" style="width:0%" data-target="47"></div></div>
+              <span class="factor-pct">47</span>
             </div>
           </div>
         </div>
@@ -495,16 +501,20 @@
     </div>
   </main>
 
-  <!-- ── FOOTER ─────────────────────────────────────────── -->
+  <!-- ── FOOTER ─────────────────────────────────────────────── -->
   <footer class="footer">
     <div class="footer-inner">
       <span class="footer-brand">LoanIQ</span>
       <span class="footer-sep"></span>
-      <span>Python · Flask · scikit-learn · Random Forest</span>
+      <span class="footer-tech">XGBoost · LightGBM · RandomForest · Stacking Ensemble</span>
       <span class="footer-sep"></span>
-      <span>Kaggle Loan Prediction Dataset</span>
+      <span>Optuna · SMOTE · Platt Calibration</span>
+      <span class="footer-ml">Kaggle Loan Prediction Dataset · 614 samples</span>
     </div>
   </footer>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
 
   <script src="/static/script.js"></script>
 </body>
