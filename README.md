@@ -12,59 +12,65 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-46E3B7?style=flat-square&logo=render&logoColor=white)](https://loan-approval-predictor-8p0v.onrender.com)
 [![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE)
 
-An end-to-end machine learning system that evaluates loan eligibility from applicant financial data. Powered by a calibrated stacking ensemble (XGBoost, LightGBM, and Random Forest) with domain-specific feature engineering, automated class balancing, and a real-time Flask web application.
+An end-to-end machine learning project that predicts loan approval status from applicant financial data. The system includes a preprocessing pipeline, feature engineering, hyperparameter-tuned Random Forest classifier, and a Flask web application for real-time inference.
 
-[Explore Live Demo](https://loan-approval-predictor-8p0v.onrender.com) · [API Health Check](https://loan-approval-predictor-8p0v.onrender.com/health) · [View Architecture](#workflow--system-architecture)
-
-</div>
+**Live deployment:** [loan-approval-predictor-8p0v.onrender.com](https://loan-approval-predictor-8p0v.onrender.com)
 
 ---
 
-## Overview
+## Table of Contents
 
-LoanIQ automates retail lending risk evaluation by combining financial domain indicators with modern machine learning techniques. Rather than relying on a standalone estimator, the system implements a two-stage ensemble architecture tuned via Bayesian optimization, cross-validated with Stratified 10-Fold sampling, and calibrated using Platt scaling for reliable probability outputs.
-
-### Performance Summary
-
-| Metric | Cross-Validation (10-Fold) | Holdout Test Set |
-|---|---|---|
-| ROC-AUC | 0.7773 (+/- 0.0253) | 0.8393 |
-| Accuracy | - | 81.3% |
-| F1-Score | - | 0.8639 |
-| Optimization Engine | Optuna Bayesian Search | - |
-| Probability Calibration | CalibratedClassifierCV (Platt Scaling) | - |
-| Class Balancing | SMOTE (Synthetic Minority Over-sampling) | - |
+- [Live Demo](#live-demo)
+- [Architecture](#architecture)
+- [Dataset](#dataset)
+- [Feature Engineering](#feature-engineering)
+- [ML Pipeline](#ml-pipeline)
+- [Model Performance](#model-performance)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [API Reference](#api-reference)
 
 ---
 
-## Workflow & System Architecture
+## Live Demo
 
-The following diagram illustrates the complete workflow from raw application intake to real-time client inference:
+The application is deployed on Render and accessible at:
 
-![Loan Approval Prediction Workflow](assets/workflow.png)
+> **[https://loan-approval-predictor-8p0v.onrender.com](https://loan-approval-predictor-8p0v.onrender.com)**
 
-### Pipeline Stages
+Note: Render free-tier instances spin down after inactivity. The first request may take 30–60 seconds to cold-start.
 
-1. **Data Ingestion & Validation**
-   - Ingestion of applicant profiles with validation on data types, edge constraints, and categorical cardinality.
-   - Missing value imputation using median values for skewed numeric features and mode values for categorical attributes.
+---
 
-2. **Domain Feature Engineering**
-   - Construction of solvency indicators (debt-to-income, residual income, leverage index, per-dependent income).
-   - Logarithmic transformation (`log1p`) on right-skewed variables (Total Income, Loan Amount).
+## Architecture
 
-3. **Preprocessing Pipeline**
-   - Scikit-learn `ColumnTransformer` applying `OneHotEncoder(handle_unknown='ignore')` to nominal variables and `StandardScaler` to continuous features.
-   - SMOTE synthesis on the training split to mitigate positive/negative class imbalance.
-
-4. **Stacking Ensemble & Calibration**
-   - Level-0 base learners: Tuned XGBoost Classifier and LightGBM Classifier.
-   - Level-1 meta-learner: Calibrated Random Forest with Logistic Regression stacking blender.
-   - Probability calibration via Platt scaling to produce reliable credit confidence scores.
-
-5. **Inference & Serving**
-   - Flask microservice serving REST endpoints (`/predict`, `/health`).
-   - Client-side glassmorphism UI offering instant validation, real-time EMI estimation, and scorecards.
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Browser Client                          │
+│         Vanilla JS · Glassmorphism UI · Real-time Calc         │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │  HTTP / JSON
+┌─────────────────────────▼───────────────────────────────────────┐
+│                      Flask Application                          │
+│                app.py · /predict · /health                      │
+└──────────┬──────────────────────────────────────────────────────┘
+           │
+┌──────────▼──────────────────────────────────────────────────────┐
+│                      ML Inference Layer                         │
+│                                                                  │
+│  Raw Input ──► Feature Engineering ──► Preprocessing Pipeline  │
+│                                                                  │
+│    TotalIncome       ColumnTransformer     Random Forest        │
+│    EMI               SimpleImputer    ──►  (300 trees)     ──►  │
+│    Balance_Income    OrdinalEncoder        GridSearchCV         │
+│    Log Transforms    StandardScaler        5-fold CV            │
+└─────────────────────────────────────────────────────────────────┘
+           │
+┌──────────▼──────────────────────────────────────────────────────┐
+│                      Model Artifacts                            │
+│          model/artifacts/model.pkl  ·  pipeline.pkl            │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
